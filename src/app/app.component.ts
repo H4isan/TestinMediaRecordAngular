@@ -11,7 +11,8 @@ export class AppComponent implements OnInit {
   title = 'app';
   public videosrc: any;
   buffer = [];
-
+  theRecorder;
+  theStream;
   constructor(private sanitizer:  DomSanitizer, private element: ElementRef) {
   }
 
@@ -19,80 +20,59 @@ export class AppComponent implements OnInit {
 }
 
   public showCam() {
-    // 1. Casting necessary because TypeScript doesn't
-    // know object Type 'navigator';
     const nav = <any>navigator;
-    // 2. Adjust for all browsers
     nav.getUserMedia = (nav.getUserMedia ||
       nav.webkitGetUserMedia ||
       nav.mozGetUserMedia ||
       nav.msGetUserMedia);
-    const constraints = { 'video': { width: { max: 320 } }, 'audio' : true };
-    // OR: http://stackoverflow.com/questions/32645724/angular2-cant-set-video-src-from-navigator-getusermedia for credits
     const promise = new Promise<string>((resolve, reject) => {
-          nav.getUserMedia( constraints, (stream) => {
+          nav.getUserMedia({video: true, audio: true}, (stream) => {
               resolve(stream);
           }, (err) => reject(err));
 
-      }).then((stream) => {
-          const webcamUrl = URL.createObjectURL(stream);
-          this.videosrc = this.sanitizer.bypassSecurityTrustResourceUrl(webcamUrl);
-          const videoRecord = this.element.nativeElement.querySelector('video');
-          console.log(videoRecord.readyState);
-          videoRecord.srcObject = stream;
-          setTimeout(() => {          videoRecord.play();
-          }, 2000);
-          const recorder = new MediaRecorder(stream);
-          // will be called each time we get data from stream.
-          recorder.ondataavailable = this.onDataAvailable;
-          recorder.start();
-          // for example: type logic here to send stream to your  server and (re)distribute to
-          // other connected clients.
-      }).catch((error) => {
+      }).then((stream) => {this.gotMedia(stream); }).catch((error) => {
           console.log(error);
       });
 
   }
-  onDataAvailable(e) {
-    if (e.data) {
-      this.buffer.push(e.data);
-      console.log(e.data);
+  gotMedia(stream) {
+    this.theStream = stream;
+    const video = this.element.nativeElement.querySelector('video');
+    video.srcObject = (stream);
+    try {
+      video.play();
+      this.theRecorder = new MediaRecorder(stream, {mimeType : 'video/webm'});
+      this.theRecorder.ondataavailable =
+          (event) => { this.buffer.push(event.data); };
+      this.theRecorder.start(100);
+    } catch (e) {
+      console.error('Exception while creating MediaRecorder: ' + e);
+      return;
     }
-  }
-  bufferToDataUrl(callback) {
-    const blob = new Blob(this.buffer, {
-      type: 'video/webm'
-    });
-    const reader = new FileReader();
-    reader.onload = function() {
-      callback(reader.result);
-    };
-    reader.readAsDataURL(blob);
-  }
-// returns file, that we can send to the server.
-  dataUrlToFile(dataUrl) {
-  const binary = atob(dataUrl.split(',')[1]),
-  data = [];
 
-  for (let i = 0; i < binary.length; i++) {
-    data.push(binary.charCodeAt(i));
   }
+  download() {
+    this.theRecorder.stop();
+    this.theStream.getTracks().forEach(track => { track.stop(); });
+    const blob = new Blob(this.buffer, {type: 'video/webm'});
+    const url =  URL.createObjectURL(blob);
+    const a: any = document.createElement('a');
+    document.body.appendChild(a);
+    a.style = 'display: none';
+    a.href = url;
+    a.download = 'test.webm';
+    a.click();
+    // setTimeout() here is needed for Firefox.
+    this.playdeoVideo();
 
-  return new File([new Uint8Array(data)], 'recorded-video.webm', {
-    type: 'video/webm'
-  });
-}
-// triggered by user.
-   /*onStopButtonClick() {
-  try {
-    recorder.stop();
-    recorder.stream.getTracks().forEach(function(track)       {track.stop();});
-  } catch (e) {}
+      // URL.revokeObjectURL(url);
 
- bufferToDataUrl(function(dataUrl) {
-    var file = dataUrlToFile(dataUrl);
-    console.log(file);
-    // upload file to the server.
-  });
-}*/
+  }
+  playdeoVideo() {
+    const superBuffer = new Blob(this.buffer);
+    const video = this.element.nativeElement.querySelector('video');
+    video.src =
+      window.URL.createObjectURL(superBuffer);
+    video.play();
+  }
 }
