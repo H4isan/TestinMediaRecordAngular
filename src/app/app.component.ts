@@ -87,6 +87,7 @@ export class AppComponent implements OnInit {
     video.src =
       window.URL.createObjectURL(superBuffer);
     video.play();
+    URL.revokeObjectURL(video.src);
   }
   getUserMedia(options, successCallback, failureCallback) {
     const nav = <any>navigator;
