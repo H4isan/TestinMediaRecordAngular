@@ -113,6 +113,7 @@ export class AppComponent implements OnInit {
         mediaControl.srcObject = stream;
         mediaControl.src = (window.URL || (<any>window).webkitURL).createObjectURL(stream);
       }
+      mediaControl.play();
     }, function (err) {
       alert('Error: ' + err);
     });
