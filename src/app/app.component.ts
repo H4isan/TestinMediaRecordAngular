@@ -42,16 +42,10 @@ export class AppComponent implements OnInit {
       nav.mozGetUserMedia ||
       nav.msGetUserMedia);
     const promise = new Promise<string>((resolve, reject) => {
-      nav.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: true }, (stream) => {
+      nav.getUserMedia({ video: true, audio: true }, (stream) => {
         resolve(stream);
       }, (err) => reject(err));
-    }).then((mediaStream) => {
-      const video = this.element.nativeElement.querySelector('video');
-      video.srcObject = mediaStream;
-      video.onloadedmetadata = function (e) {
-        video.play();
-      };
-    });
+    }).then((mediaStream) => this.gotMedia(mediaStream));
 
   }
   gotMedia(stream) {
@@ -105,8 +99,8 @@ export class AppComponent implements OnInit {
   getStream() {
     const nav = <any>navigator;
     const constraints = { 'video': true };
-    this.getUserMedia(constraints, function (stream) {
-      const mediaControl =  this.element.nativeElement.querySelector('video');
+    this.getUserMedia(constraints,(stream) => {
+      const mediaControl = this.element.nativeElement.querySelector('video');
       if (nav.mozGetUserMedia) {
         mediaControl.mozSrcObject = stream;
       } else {
