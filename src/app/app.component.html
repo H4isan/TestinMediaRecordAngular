@@ -8,11 +8,10 @@
 <h2>Here are some links to help you start: </h2>
 <h2>webcam:</h2>
 <!-- Define <video> object to hold webcam image -->
-<video [src]="videosrc" class="cssWebCam"></video>
-
+<video controls autoplay [src]="videosrc" class="cssWebCam"></video>
 <p>See app/webcam/webcam.html for HTML, see app/webcam/webcam.css for CSS. </p>
 <p>Automatic streaming is enabled. </p>
- <button (click)="showCamMobile();"> Mobile </button>
+ <button (click)="getStream();"> Mobile </button>
  <br>
  <button (click)="showCam();"> Desktop </button>
  <button (click)="download();"> Hola </button>

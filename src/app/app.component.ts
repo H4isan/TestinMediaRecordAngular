@@ -24,7 +24,7 @@ export class AppComponent implements OnInit {
     const nav = <any>navigator;
     const constraints = { audio: true, video: { width: 1280, height: 720 } };
 
-    navigator.mediaDevices.getUserMedia(constraints)
+    nav.mediaDevices.getUserMedia(constraints)
       .then(function (mediaStream) {
         const video = this.element.nativeElement.querySelector('video');
         video.srcObject = mediaStream;
@@ -93,5 +93,28 @@ export class AppComponent implements OnInit {
     video.src =
       window.URL.createObjectURL(superBuffer);
     video.play();
+  }
+  getUserMedia(options, successCallback, failureCallback) {
+    const nav = <any>navigator;
+    const api = nav.getUserMedia || nav.webkitGetUserMedia || nav.mozGetUserMedia || nav.msGetUserMedia;
+    if (api) {
+      return api.bind(nav)(options, successCallback, failureCallback);
+    }
+    alert('User Media API not supported.');
+  }
+  getStream() {
+    const nav = <any>navigator;
+    const constraints = { 'video': true };
+    this.getUserMedia(constraints, function (stream) {
+      const mediaControl =  this.element.nativeElement.querySelector('video');
+      if (nav.mozGetUserMedia) {
+        mediaControl.mozSrcObject = stream;
+      } else {
+        mediaControl.srcObject = stream;
+        mediaControl.src = (window.URL || (<any>window).webkitURL).createObjectURL(stream);
+      }
+    }, function (err) {
+      alert('Error: ' + err);
+    });
   }
 }
