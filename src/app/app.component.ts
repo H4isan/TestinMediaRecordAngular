@@ -22,43 +22,17 @@ export class AppComponent implements OnInit {
 
   showCamMobile() {
     const nav = <any>navigator;
-    if (nav.mediaDevices === undefined) {
-      nav.mediaDevices = {};
-    }
-    if (nav.mediaDevices.getUserMedia === undefined) {
-      nav.mediaDevices.getUserMedia = (constraints) => {
-        // First get ahold of the legacy getUserMedia, if present
-        const getUserMedia = nav.webkitGetUserMedia || nav.mozGetUserMedia;
+    const constraints = { audio: true, video: { width: 1280, height: 720 } };
 
-        // Some browsers just don't implement it - return a rejected promise with an error
-        // to keep a consistent interface
-        if (!getUserMedia) {
-          return Promise.reject(new Error('getUserMedia is not implemented in this browser'));
-        }
-
-        // Otherwise, wrap the call to the old navigator.getUserMedia with a Promise
-        return new Promise(function (resolve, reject) {
-          getUserMedia.call(navigator, constraints, resolve, reject);
-        });
-      };
-    }
-    navigator.mediaDevices.getUserMedia({ audio: true, video: true })
-      .then((stream) => {
+    navigator.mediaDevices.getUserMedia(constraints)
+      .then(function (mediaStream) {
         const video = this.element.nativeElement.querySelector('video');
-        // Older browsers may not have srcObject
-        if ('srcObject' in video) {
-          video.srcObject = stream;
-        } else {
-          // Avoid using this in new browsers, as it is going away.
-          video.src = window.URL.createObjectURL(stream);
-        }
-        video.onloadedmetadata = function(e) {
+        video.srcObject = mediaStream;
+        video.onloadedmetadata = function (e) {
           video.play();
         };
       })
-      .catch((err) => {
-        console.log(err.name + ': ' + err.message);
-      });
+      .catch(function (err) { console.log(err.name + ': ' + err.message); }); // always check for errors at the end.
   }
 
   public showCam() {
