@@ -19,19 +19,25 @@ export class AppComponent implements OnInit {
   ngOnInit() {
 }
 
+
+
+
   public showCam() {
     const nav = <any>navigator;
-    nav.getUserMedia = (nav.getUserMedia ||
+    nav.getWebcam = (nav.getUserMedia ||
       nav.webkitGetUserMedia ||
       nav.mozGetUserMedia ||
       nav.msGetUserMedia);
     const promise = new Promise<string>((resolve, reject) => {
-          nav.getUserMedia({video: true, audio: true}, (stream) => {
+          nav.mediaDevices.getUserMedia({video: { facingMode: 'user' }, audio: true}, (stream) => {
               resolve(stream);
           }, (err) => reject(err));
-
-      }).then((stream) => {this.gotMedia(stream); }).catch((error) => {
-          console.log(error);
+      }).then((mediaStream) => {
+        const video = this.element.nativeElement.querySelector('video');
+        video.srcObject = mediaStream;
+        video.onloadedmetadata = function(e) {
+          video.play();
+        };
       });
 
   }
