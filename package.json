@@ -2,16 +2,23 @@
   "name": "angular-test-components",
   "version": "0.0.0",
   "license": "MIT",
+  "main": "app.js",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
     "test": "ng test",
     "lint": "ng lint",
-    "e2e": "ng e2e"
+    "e2e": "ng e2e",
+    "postinstall": "ng build"
   },
-  "private": true,
+  "engines": {
+    "node": "~6.11.3",
+    "npm": "~3.10.10"
+  },
   "dependencies": {
+    "@angular/cli": "1.4.3",
+    "@angular/compiler-cli": "^4.2.4",
     "@angular/animations": "^4.4.4",
     "@angular/common": "^4.2.4",
     "@angular/compiler": "^4.2.4",
@@ -24,6 +31,7 @@
     "@progress/kendo-angular-l10n": "^1.0.4",
     "@progress/kendo-angular-upload": "^1.2.1",
     "core-js": "^2.4.1",
+    "express": "^4.16.1",
     "rxjs": "^5.4.2",
     "zone.js": "^0.8.14"
   },
